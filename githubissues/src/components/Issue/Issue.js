@@ -1,26 +1,50 @@
-import React from 'react'
-import './Issue.css'
-import Labels from "../Labels/Labels"
-//props is used from a parent componenet
+import React from 'react';
+import timeSince from '../../lib/timeSince'
+import Icon from '../Icon/Icon'
+import Label from '../Label/Label';
+import './Issue.css';
+
+import { Link } from 'react-router-dom';
+
 export default function Issue(props) {
+    const { issueData: issue } = props
+    const time = timeSince(new Date(issue.created_at));
+
     return (
-        //all code was stolen using the inspect tool in the browser
         <div className="Issue">
-            <svg class="octicon octicon-issue-opened open"
-                viewBox="0 0 16 16"
-                version="1.1"
-                width="16"
-                height="16"
-                aria-hidden="true">
-                <path fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9 3a1 1 0 11-2 0 1 1 0 012 0zm-.25-6.25a.75.75 0 00-1.5 0v3.5a.75.75 0 001.5 0v-3.5z"></path></svg>
-            <path fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9 3a1 1 0 11-2 0 1 1 0 012 0zm-.25-6.25a.75.75 0 00-1.5 0v3.5a.75.75 0 001.5 0v-3.5z"></path>
-            {props.issueData.title}
-            {props.issueData.labels.map((label) => {
-                return <Labels key={label.Id} labelData={label.name} labelColor={label.color} />
-            })}
+            <div className="Issue__icon">
+                <Icon type={issue.state} />
+            </div>
+            <div className="Issue__details">
+                <Link className="Issue__title" to={`/issue/${issue.number}`}>
+                    {issue.title}{issue.number}
+                </Link>
+                <span className="Issue__labels">
+                    {issue.labels.map(label => <Label key={label.id} label={label} />)}
+                </span>
+                <div className="Issue__meta">
+                    #{issue.number} opened {time} by <a className="Issue__user" href={issue.user.html_url}>{issue.user.login}</a>
+                </div>
+            </div>
+            <div className="Issue__extras">
+                <div className="Issue__extra-col">
+                    {issue.pull_request && (
+                        <a className="Issues__extras-link" href={issue.pull_request.html_url}><Icon type="pull-request" /> 1</a>
+                    )}
+                </div>
+                <div className="Issue__extra-col">
+                    {issue.assignees.length > 0 && (
+                        issue.assignees.map(assignee =>
+                            <a className="Issues__extras-link" key={assignee.id} href={assignee.html_url}><img className="Issue__assignee-img" src={assignee.avatar_url} alt={assignee.login} /></a>
+                        )
+                    )}
+                </div>
+                <div className="Issue__extra-col">
+                    {issue.comments > 0 && (
+                        <a className="Issues__extras-link" href={issue.comments_url}><Icon type="comment" /> {issue.comments}</a>
+                    )}
+                </div>
+            </div>
         </div>
     )
 }
-
-//line 17: rendering the issueData title established in issuelist.js
-//line 18: and map over all the labels and return the id, the name and the color
